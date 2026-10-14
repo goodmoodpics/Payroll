@@ -1,0 +1,69 @@
+{
+  "year": 2026,
+  "verified": false,
+  "source": "IRS Pub 15-T (2026), Percentage Method Tables for Automated Payroll Systems \u2014 NOT YET LOADED. irs.gov was unreachable from the build environment.",
+  "constants": {
+    "ss_rate": {
+      "value": "0.062",
+      "verified": true,
+      "note": "statutory (IRC 3101(a))"
+    },
+    "medicare_rate": {
+      "value": "0.0145",
+      "verified": true,
+      "note": "statutory (IRC 3101(b))"
+    },
+    "addl_medicare_rate": {
+      "value": "0.009",
+      "verified": true,
+      "note": "statutory; employee-only, wages over threshold"
+    },
+    "addl_medicare_threshold": {
+      "value": "200000",
+      "verified": true,
+      "note": "statutory; withholding threshold, not indexed"
+    },
+    "ss_wage_base": {
+      "value": "184500",
+      "verified": false,
+      "note": "from memory of SSA 2026 announcement \u2014 verify at ssa.gov"
+    },
+    "futa_net_rate": {
+      "value": "0.006",
+      "verified": false,
+      "note": "6.0% less 5.4% credit; verify NY is not a credit-reduction state for 2026"
+    },
+    "futa_wage_base": {
+      "value": "7000",
+      "verified": true,
+      "note": "statutory"
+    },
+    "form_1099_nec_threshold": {
+      "value": "2000",
+      "verified": false,
+      "note": "raised from 600 for payments after 12/31/2025 per 2025 tax law; verify"
+    }
+  },
+  "schedules": {
+    "standard": {
+      "single": {
+        "annual_adjustment": "0",
+        "brackets": []
+      },
+      "married": {
+        "annual_adjustment": "0",
+        "brackets": []
+      }
+    },
+    "step2_checked": {
+      "single": {
+        "annual_adjustment": "0",
+        "brackets": []
+      },
+      "married": {
+        "annual_adjustment": "0",
+        "brackets": []
+      }
+    }
+  }
+}

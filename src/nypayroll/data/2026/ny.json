@@ -1,0 +1,58 @@
+{
+  "year": 2026,
+  "verified": false,
+  "source": "NYS-50-T-NYS (1/26) Method II exact calculation \u2014 NOT YET LOADED. tax.ny.gov was unreachable from the build environment.",
+  "constants": {
+    "pfl_rate": {
+      "value": "0.00432",
+      "verified": true,
+      "note": "NY DFS 2026 PFL decision: 0.432% of gross wages"
+    },
+    "pfl_annual_cap": {
+      "value": "411.91",
+      "verified": true,
+      "note": "NY DFS 2026 PFL decision"
+    },
+    "sdi_rate": {
+      "value": "0.005",
+      "verified": true,
+      "note": "NY DBL employee contribution 0.5% of wages"
+    },
+    "sdi_weekly_cap": {
+      "value": "0.60",
+      "verified": true,
+      "note": "NY DBL employee max $0.60 per week"
+    },
+    "sui_wage_base": {
+      "value": "13000",
+      "verified": false,
+      "note": "NY DOL 2026 taxable wage base \u2014 from memory, verify"
+    }
+  },
+  "schedules": {
+    "standard": {
+      "single": {
+        "annual_adjustment": "0",
+        "brackets": [],
+        "per_allowance": "0"
+      },
+      "married": {
+        "annual_adjustment": "0",
+        "brackets": [],
+        "per_allowance": "0"
+      }
+    },
+    "step2_checked": {
+      "single": {
+        "annual_adjustment": "0",
+        "brackets": [],
+        "per_allowance": "0"
+      },
+      "married": {
+        "annual_adjustment": "0",
+        "brackets": [],
+        "per_allowance": "0"
+      }
+    }
+  }
+}
