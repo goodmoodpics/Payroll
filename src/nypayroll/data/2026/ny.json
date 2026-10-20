@@ -53,6 +53,18 @@
         "brackets": [],
         "per_allowance": "0"
       }
+    },
+    "nyc": {
+      "single": {
+        "annual_adjustment": "0",
+        "per_allowance": "0",
+        "brackets": []
+      },
+      "married": {
+        "annual_adjustment": "0",
+        "per_allowance": "0",
+        "brackets": []
+      }
     }
   }
 }

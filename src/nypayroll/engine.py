@@ -7,7 +7,7 @@ from decimal import Decimal
 from .money import D, cents
 from .tables import TaxTables, WithholdingSchedule
 
-PERIODS_PER_YEAR = {"weekly": 52, "biweekly": 26, "semimonthly": 24, "monthly": 12}
+PERIODS_PER_YEAR = {"weekly": 52, "biweekly": 26, "semimonthly": 24, "monthly": 12, "quarterly": 4}
 ZERO = Decimal("0")
 
 
@@ -31,6 +31,7 @@ class W4:
     ny_status: str = "single"
     ny_allowances: int = 0
     ny_extra: Decimal = ZERO  # per period
+    nyc_resident: bool = False  # NYC resident income tax is withheld on top of NYS tax
 
 
 @dataclass
@@ -51,6 +52,7 @@ class Paycheck:
     fit_wages: Decimal
     fed_withholding: Decimal
     ny_withholding: Decimal
+    nyc_withholding: Decimal
     social_security: Decimal
     medicare: Decimal
     addl_medicare: Decimal
@@ -62,7 +64,7 @@ class Paycheck:
 
     @property
     def total_employee_taxes(self) -> Decimal:
-        return (self.fed_withholding + self.ny_withholding + self.social_security
+        return (self.fed_withholding + self.ny_withholding + self.nyc_withholding + self.social_security
                 + self.medicare + self.addl_medicare + self.ny_pfl + self.ny_sdi)
 
 
@@ -124,6 +126,12 @@ def compute_paycheck(
     ny_tax = annualized_withholding(fit_wages, periods, ny_sched, ny_sched.per_allowance * w4.ny_allowances)
     ny_withholding = cents(ny_tax + w4.ny_extra)
 
+    nyc_withholding = ZERO
+    if w4.nyc_resident:
+        nyc_sched = tables.schedule("ny", w4.ny_status, "nyc")
+        nyc_tax = annualized_withholding(fit_wages, periods, nyc_sched, nyc_sched.per_allowance * w4.ny_allowances)
+        nyc_withholding = cents(nyc_tax)
+
     # --- NY PFL / SDI -----------------------------------------------------
     pfl_cap_left = max(tables.const("ny", "pfl_annual_cap") - ytd.pfl_withheld, ZERO)
     ny_pfl = min(cents(gross * tables.const("ny", "pfl_rate")), pfl_cap_left)
@@ -132,7 +140,7 @@ def compute_paycheck(
 
     ded_amounts = {d.name: cents(d.amount) for d in deductions}
     net = (gross - sum(ded_amounts.values(), ZERO) - fed_withholding - ny_withholding
-           - social_security - medicare - addl - ny_pfl - ny_sdi)
+           - nyc_withholding - social_security - medicare - addl - ny_pfl - ny_sdi)
 
     # --- employer side ----------------------------------------------------
     futa_room = max(tables.const("federal", "futa_wage_base") - ytd.futa_wages, ZERO)
@@ -145,7 +153,7 @@ def compute_paycheck(
     }
     return Paycheck(
         gross=cents(gross), ss_wages=ss_taxable, medicare_wages=fica_wages, fit_wages=fit_wages,
-        fed_withholding=fed_withholding, ny_withholding=ny_withholding,
+        fed_withholding=fed_withholding, ny_withholding=ny_withholding, nyc_withholding=nyc_withholding,
         social_security=social_security, medicare=medicare, addl_medicare=addl,
         ny_pfl=ny_pfl, ny_sdi=ny_sdi, deductions=ded_amounts, net=cents(net), employer=employer,
     )

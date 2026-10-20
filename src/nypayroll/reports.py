@@ -41,6 +41,7 @@ def nys45_summary(checks: list[dict], quarter: int) -> dict:
     return {
         "total_gross_wages": _sum(rows, "gross"),
         "ny_income_tax_withheld": _sum(rows, "ny_withholding"),
+        "nyc_income_tax_withheld": _sum(rows, "nyc_withholding"),
         "pfl_withheld": _sum(rows, "ny_pfl"),
         "sdi_withheld": _sum(rows, "ny_sdi"),
         "employer_sui_due": cents(sum((D(r["employer"]["sui"]) for r in rows), ZERO)),
@@ -58,6 +59,7 @@ def w2_summary(checks: list[dict]) -> dict:
         "box_6_medicare_tax": _sum(checks, "medicare") + _sum(checks, "addl_medicare"),
         "box_16_ny_wages": _sum(checks, "fit_wages"),
         "box_17_ny_withheld": _sum(checks, "ny_withholding"),
+        "box_18_19_nyc_local_wages_withheld": (_sum(checks, "fit_wages"), _sum(checks, "nyc_withholding")),
         "box_14_ny_pfl": _sum(checks, "ny_pfl"),
         "box_14_ny_sdi": _sum(checks, "ny_sdi"),
         "note": "NY box 16 may differ from federal box 1 for items NY treats differently (e.g. 414(h)); review.",

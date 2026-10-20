@@ -70,3 +70,18 @@ def test_employer_futa_and_sui_wage_bases(tables):
 def test_floats_rejected(tables):
     with pytest.raises(TypeError):
         compute_paycheck(2000.5, "biweekly", W4(), tables)
+
+
+def test_nyc_resident_withholding_added_and_in_net(tables):
+    base = compute_paycheck("2000", "biweekly", W4(ny_allowances=1), tables)
+    nyc = compute_paycheck("2000", "biweekly", W4(ny_allowances=1, nyc_resident=True), tables)
+    assert base.nyc_withholding == D("0")
+    assert nyc.nyc_withholding > 0
+    assert nyc.net == base.net - nyc.nyc_withholding
+
+
+def test_quarterly_and_monthly_periods(tables):
+    q = compute_paycheck("6000", "quarterly", W4(), tables)
+    assert q.ny_sdi == D("7.80")  # 0.60/week * 52 / 4
+    assert q.social_security == D("372.00")
+    assert compute_paycheck("6000", "monthly", W4(), tables).ny_sdi == D("2.60")

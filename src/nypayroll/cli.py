@@ -32,7 +32,7 @@ def _ytd(prior: list[dict]) -> YTD:
 
 def cmd_employee_add(a, conn):
     w4 = {"fed_status": a.fed_status, "ny_status": a.ny_status, "ny_allowances": a.ny_allowances,
-          "fed_step2_checked": a.step2}
+          "fed_step2_checked": a.step2, "nyc_resident": a.nyc}
     cur = conn.execute("INSERT INTO employees(name, ssn_last4, pay_period, w4, sui_rate) VALUES (?,?,?,?,?)",
                        (a.name, a.ssn_last4, a.period, json.dumps(w4), a.sui_rate))
     conn.commit()
@@ -51,7 +51,7 @@ def cmd_run(a, conn):
         for item in tables.unverified_items():
             print("   -", item, file=sys.stderr)
     print(f"{e['name']}  pay date {a.date}  ({e['pay_period']})")
-    for label, val in [("Gross", pc.gross), ("Federal W/H", pc.fed_withholding), ("NY W/H", pc.ny_withholding),
+    for label, val in [("Gross", pc.gross), ("Federal W/H", pc.fed_withholding), ("NY W/H", pc.ny_withholding), ("NYC W/H", pc.nyc_withholding),
                        ("Social Security", pc.social_security), ("Medicare", pc.medicare),
                        ("Addl Medicare", pc.addl_medicare), ("NY PFL", pc.ny_pfl), ("NY SDI", pc.ny_sdi),
                        *pc.deductions.items(), ("NET PAY", pc.net)]:
@@ -127,6 +127,7 @@ def main(argv=None):
     s.add_argument("--ssn-last4"); s.add_argument("--fed-status", choices=["single", "married"], default="single")
     s.add_argument("--ny-status", choices=["single", "married"], default="single")
     s.add_argument("--ny-allowances", type=int, default=0); s.add_argument("--step2", action="store_true")
+    s.add_argument("--nyc", action="store_true", help="employee lives in NYC (NYC resident tax withheld)")
     s.add_argument("--sui-rate", default="0"); s.set_defaults(fn=cmd_employee_add)
 
     s = sub.add_parser("run", help="calculate (and save) one paycheck")

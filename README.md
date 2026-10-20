@@ -17,7 +17,7 @@ It calculates paychecks and produces the numbers/files you enter into IRS, SSA a
 
 ### Payroll refuses to run until tables are verified
 Each `src/nypayroll/data/<year>/*.json` file has `verified` flags. Real runs raise `TablesNotReady`
-for anything unverified. `nypayroll tables-status` lists what's outstanding. Items to load/verify for 2026:
+for anything unverified. `nypayroll tables-status` lists what's outstanding. Items to load/verify for 2026 (NYC resident schedule is the `nyc` variant in `ny.json`):
 
 1. `federal.json`: Pub 15-T percentage-method schedules (standard + Step 2 checkbox, single/married), plus SS wage base, FUTA credit-reduction status, 1099-NEC threshold.
 2. `ny.json`: NYS-50-T-NYS Method II schedules and per-allowance amount, plus the NY UI wage base.
@@ -39,5 +39,5 @@ nypayroll 1099 --year 2026 > 1099.csv
 Only the last 4 digits of SSNs/TINs are stored. Keep the database file out of git (already ignored).
 
 ## Not modeled yet
-Semiweekly federal deposit rules, NYS-1 deposit schedules, NYC/Yonkers withholding, MCTMT, supplemental-wage
+Semiweekly federal deposit rules, NYS-1 deposit schedules, Yonkers withholding, MCTMT, supplemental-wage
 withholding, garnishments, minimum-wage/overtime checks, corrections/amended returns.
