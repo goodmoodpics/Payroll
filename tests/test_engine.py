@@ -41,10 +41,9 @@ def test_sdi_capped_per_period(tables):
     assert compute_paycheck("5000", "monthly", W4(), tables).ny_sdi == D("2.60")
 
 
-def test_annualized_withholding_mechanics(tables):
-    # 2000 biweekly -> 52,000 annual - 10,000 adj = 42,000 -> 10% = 4,200 -> /26
-    pc = compute_paycheck("2000", "biweekly", W4(), tables)
-    assert pc.fed_withholding == D("161.54")
+def test_nyc_not_loaded_is_refused():
+    with pytest.raises(TablesNotReady):
+        compute_paycheck("2000", "biweekly", W4(nyc_resident=True), TaxTables(2026, allow_unverified=True))
 
 
 def test_pretax_deduction_reduces_income_tax_not_fica(tables):

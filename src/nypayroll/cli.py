@@ -124,7 +124,7 @@ def main(argv=None):
 
     s = sub.add_parser("employee-add")
     s.add_argument("name"); s.add_argument("--period", choices=PERIODS_PER_YEAR, required=True)
-    s.add_argument("--ssn-last4"); s.add_argument("--fed-status", choices=["single", "married"], default="single")
+    s.add_argument("--ssn-last4"); s.add_argument("--fed-status", choices=["single", "married", "head_of_household"], default="single")
     s.add_argument("--ny-status", choices=["single", "married"], default="single")
     s.add_argument("--ny-allowances", type=int, default=0); s.add_argument("--step2", action="store_true")
     s.add_argument("--nyc", action="store_true", help="employee lives in NYC (NYC resident tax withheld)")

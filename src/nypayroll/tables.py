@@ -30,7 +30,6 @@ class WithholdingSchedule:
     """Annualized-percentage-method schedule for one filing status."""
     annual_adjustment: Decimal  # standard deduction-equivalent subtracted first
     brackets: tuple[Bracket, ...]
-    per_allowance: Decimal = Decimal("0")  # NY IT-2104 allowance value, if applicable
 
 
 def _load_json(year: int, name: str) -> dict:
@@ -77,6 +76,16 @@ class TaxTables:
             raise TablesNotReady(f"{table}.{key} is not verified: {entry.get('note', '')}")
         return D(entry["value"])
 
+    # -- NY Method II (per-period tables) ----------------------------------
+    def ny_method2(self, status: str, table: str = "ny") -> dict:
+        """Method II data for NYS (`ny`) or NYC (`nyc`, nested in ny.json)."""
+        if table == "nyc":
+            t = self.raw["ny"].get("nyc", {})
+            if not t.get("verified") or "method2" not in t:
+                raise TablesNotReady(f"NYC resident withholding tables not loaded: {t.get('source')}")
+            return t["method2"][status]
+        return self._require("ny")["method2"][status]
+
     # -- withholding schedules -------------------------------------------
     def schedule(self, table: str, status: str, variant: str = "standard") -> WithholdingSchedule:
         t = self._require(table)
@@ -87,4 +96,4 @@ class TaxTables:
         brackets = tuple(Bracket(D(f), D(b), D(r)) for f, b, r in s["brackets"])
         if not brackets:
             raise TablesNotReady(f"{table} schedule {variant}/{status} has no brackets yet")
-        return WithholdingSchedule(D(s["annual_adjustment"]), brackets, D(s.get("per_allowance", "0")))
+        return WithholdingSchedule(D(s["annual_adjustment"]), brackets)

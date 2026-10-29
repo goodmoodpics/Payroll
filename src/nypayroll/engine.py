@@ -22,13 +22,13 @@ class Deduction:
 @dataclass
 class W4:
     """Federal W-4 (2020+) and NY IT-2104 inputs."""
-    fed_status: str = "single"  # single | married
+    fed_status: str = "single"  # single | married | head_of_household
     fed_step2_checked: bool = False
     fed_credits: Decimal = ZERO  # step 3
     fed_other_income: Decimal = ZERO  # step 4(a)
     fed_deductions: Decimal = ZERO  # step 4(b)
     fed_extra: Decimal = ZERO  # step 4(c), per period
-    ny_status: str = "single"
+    ny_status: str = "single"  # IT-2104: single | married
     ny_allowances: int = 0
     ny_extra: Decimal = ZERO  # per period
     nyc_resident: bool = False  # NYC resident income tax is withheld on top of NYS tax
@@ -85,6 +85,29 @@ def annualized_withholding(taxable_wages: Decimal, periods: int, sched: Withhold
     return max(annual_tax, ZERO) / periods
 
 
+class MethodIIIRequired(NotImplementedError):
+    pass
+
+
+def ny_method2_withholding(tables: TaxTables, wages: Decimal, period: str, status: str,
+                           exemptions: int, table: str = "ny") -> Decimal:
+    """NYS-50-T Method II exact calculation, per-period tables.
+
+    Quarterly has no NY per-period table: wages are annualized against the annual
+    schedule and divided by 4 (same approach NY uses for its annualized tax).
+    """
+    m = tables.ny_method2(status, table)
+    key, factor = (period, 1) if period != "quarterly" else ("annual", 4)
+    allowance = D(m["deduction"][key]) + exemptions * D(m["exemption"][key])
+    net = wages * factor - allowance
+    if net <= 0:
+        return ZERO
+    if net >= D(m["limits"][key]):
+        raise MethodIIIRequired("net wages exceed Method II range; NY Method III (top rates) not implemented")
+    floor, rate, add = next(r for r in reversed(m["tables"][key]) if net >= D(r[0]))
+    return cents(((net - D(floor)) * D(rate) + D(add)) / factor)
+
+
 def compute_paycheck(
     gross,
     period: str,
@@ -122,15 +145,10 @@ def compute_paycheck(
     fed_tax = max(fed_tax - w4.fed_credits / periods, ZERO)
     fed_withholding = cents(fed_tax + w4.fed_extra)
 
-    ny_sched = tables.schedule("ny", w4.ny_status)
-    ny_tax = annualized_withholding(fit_wages, periods, ny_sched, ny_sched.per_allowance * w4.ny_allowances)
-    ny_withholding = cents(ny_tax + w4.ny_extra)
-
-    nyc_withholding = ZERO
+    ny_withholding = ny_method2_withholding(tables, fit_wages, period, w4.ny_status, w4.ny_allowances) + w4.ny_extra
+    nyc_withholding = cents(ZERO)
     if w4.nyc_resident:
-        nyc_sched = tables.schedule("ny", w4.ny_status, "nyc")
-        nyc_tax = annualized_withholding(fit_wages, periods, nyc_sched, nyc_sched.per_allowance * w4.ny_allowances)
-        nyc_withholding = cents(nyc_tax)
+        nyc_withholding = ny_method2_withholding(tables, fit_wages, period, w4.ny_status, w4.ny_allowances, "nyc")
 
     # --- NY PFL / SDI -----------------------------------------------------
     pfl_cap_left = max(tables.const("ny", "pfl_annual_cap") - ytd.pfl_withheld, ZERO)
